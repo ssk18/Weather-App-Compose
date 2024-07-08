@@ -14,3 +14,12 @@
 .cxx
 local.properties
 WeatherApiKey.properties
+# Gradle Wrapper files to include
+!gradlew
+!gradlew.bat
+!gradle/wrapper/gradle-wrapper.jar
+!gradle/wrapper/gradle-wrapper.properties
+
+# Ignore other files in the gradle directory
+gradle/**/*
+!gradle/wrapper/**

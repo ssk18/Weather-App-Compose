@@ -1,0 +1,12 @@
+<resources>
+    <string name="app_name">Weather App</string>
+    <string name="temperature_degrees">%d°</string>
+    <string name="min_temperature">Min</string>
+    <string name="now_temperature">Current</string>
+    <string name="max_temperature">Max</string>
+
+    <string name="location_permission_content_description">Location icon</string>
+    <string name="location_permission_description">Please allow the app to access your location.</string>
+    <string name="location_permission_continue">OK</string>
+    <string name="location_permission_not_available">The app needs your permission to access your current location to display the weather for your location.</string>
+</resources>
