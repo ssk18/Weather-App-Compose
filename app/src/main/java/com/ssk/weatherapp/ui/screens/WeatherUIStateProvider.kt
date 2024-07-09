@@ -1,9 +1,10 @@
 package com.ssk.weatherapp.ui.screens
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
+import com.ssk.weatherapp.ui.screens.uistates.CurrentWeatherUIState
 
-class WeatherUIStateProvider : PreviewParameterProvider<WeatherUIState> {
-    override val values: Sequence<WeatherUIState> = sequenceOf(
-        WeatherUIState(
+class WeatherUIStateProvider : PreviewParameterProvider<CurrentWeatherUIState> {
+    override val values: Sequence<CurrentWeatherUIState> = sequenceOf(
+        CurrentWeatherUIState(
             temperature = 25.0,
             weatherDescription = "Sunny",
             isCloudy = true,

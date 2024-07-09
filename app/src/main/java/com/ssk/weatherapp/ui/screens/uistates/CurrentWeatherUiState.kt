@@ -1,8 +1,8 @@
-package com.ssk.weatherapp.ui.screens
+package com.ssk.weatherapp.ui.screens.uistates
 
 import com.ssk.weatherapp.data.model.CurrentWeather
 
-data class WeatherUIState(
+data class CurrentWeatherUIState(
     val temperature: Double,
     val weatherDescription: String,
     val weatherIcon: String,
@@ -13,7 +13,7 @@ data class WeatherUIState(
     val main: CurrentWeather.Main?,
 ) {
     companion object {
-        fun fromCurrentWeather(currentWeather: CurrentWeather): WeatherUIState {
+        fun fromCurrentWeather(currentWeather: CurrentWeather): CurrentWeatherUIState {
             val weatherDescription = currentWeather.weather.firstOrNull()?.description ?: ""
             val weatherIcon = currentWeather.weather.firstOrNull()?.icon ?: ""
             val isRaining = (currentWeather.rain?.`1h` ?: 0.0) > 0
@@ -22,7 +22,7 @@ data class WeatherUIState(
             val city = currentWeather.name
             val main = currentWeather.main
 
-            return WeatherUIState(
+            return CurrentWeatherUIState(
                 temperature = currentWeather.main.temp,
                 weatherDescription = weatherDescription,
                 weatherIcon = weatherIcon,
