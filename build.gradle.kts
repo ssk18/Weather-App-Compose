@@ -3,6 +3,7 @@ buildscript {
     dependencies {
         classpath(libs.jetpack.navigation.safe.args.gradle.plugin)
         classpath(libs.hilt.gradle.plugin)
+        classpath(libs.android.secrets.gradle.plugin)
     }
     repositories {
         google()

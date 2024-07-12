@@ -13,7 +13,7 @@
 .externalNativeBuild
 .cxx
 local.properties
-WeatherApiKey.properties
+secrets.properties
 # Gradle Wrapper files to include
 !gradlew
 !gradlew.bat

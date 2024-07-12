@@ -22,4 +22,15 @@ interface WeatherService {
         @Query("appId") appId: String,
     ): Response<ForecastResponse>
 
+    @GET("weather?units=metric")
+    suspend fun getCityWeather(
+        @Query("q") q: String,
+        @Query("appId") appId: String,
+    ): Response<CurrentWeather>
+
+    @GET("forecast?units=metric")
+    suspend fun getCityForecast(
+        @Query("q") q: String,
+        @Query("appId") appId: String,
+    ): Response<ForecastResponse>
 }

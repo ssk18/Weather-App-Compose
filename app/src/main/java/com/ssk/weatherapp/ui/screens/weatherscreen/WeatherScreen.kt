@@ -1,7 +1,10 @@
-package com.ssk.weatherapp.ui.screens
+package com.ssk.weatherapp.ui.screens.weatherscreen
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -13,83 +16,197 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
-import androidx.compose.ui.unit.*
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ssk.weatherapp.R
+import com.ssk.weatherapp.ui.screens.splashscreen.SplashScreen
 import com.ssk.weatherapp.ui.screens.uistates.CurrentWeatherUIState
 import com.ssk.weatherapp.ui.screens.uistates.WeatherForecastUiState
 import com.ssk.weatherapp.ui.theme.WeatherAppTheme
 import com.ssk.weatherapp.utils.backgroundColour
 import com.ssk.weatherapp.utils.formatTemperature
-import com.ssk.weatherapp.utils.roundToInt
 import com.ssk.weatherapp.utils.selectWeatherIcon
 import com.ssk.weatherapp.utils.selectWeatherImage
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun WeatherScreen(
     innerPadding: PaddingValues = PaddingValues()
 ) {
     val viewModel = hiltViewModel<WeatherViewModel>()
     val combinedState by viewModel.combinedWeatherState.collectAsStateWithLifecycle()
+    val autoCompleteSuggestions by viewModel.autoCompleteSuggestions.collectAsStateWithLifecycle()
     val currentWeatherState = combinedState?.currentWeather
     val forecastState = combinedState?.weatherForecast
     val weatherImage = selectWeatherImage(currentWeatherState)
+    var query by remember { mutableStateOf("") }
+    //var showSuggestions
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(innerPadding)
-    ) {
-        if (combinedState == null) {
-            Box(
-                contentAlignment = Alignment.Center,
-                modifier = Modifier.fillMaxSize()
-            ) {
-                CircularProgressIndicator()
+    Scaffold { mPaddding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(mPaddding)
+        ) {
+            if (combinedState == null) {
+                Box(
+                    contentAlignment = Alignment.Center,
+                    modifier = Modifier.fillMaxSize()
+                ) {
+                    SplashScreen()
+                }
+            } else {
+                SearchBar(
+                    query = query,
+                    onQueryChange = {
+                        query = it
+                        viewModel.fetchAutoCompleteSuggestions(it)
+                    },
+                    onSearchAction = {
+                        viewModel.clearSuggestions()
+                    }
+                )
+
+                if (autoCompleteSuggestions.isNotEmpty()) {
+                    LazyColumn(
+                        modifier = Modifier
+                            .wrapContentWidth()
+                            .background(color = MaterialTheme.colorScheme.background)
+                    ) {
+                        items(autoCompleteSuggestions) { suggestion ->
+                            Text(
+                                text = suggestion.getFullText(null).toString(),
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(16.dp)
+                                    .clickable {
+                                        query = suggestion
+                                            .getFullText(null)
+                                            .toString()
+                                        viewModel.clearSuggestions()
+                                        viewModel.fetchCityWeatherData(
+                                            suggestion
+                                                .getPrimaryText(
+                                                    null
+                                                )
+                                                .toString()
+                                        )
+                                    },
+                                color = MaterialTheme.colorScheme.onBackground,
+                            )
+                        }
+                    }
+                }
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(innerPadding)
+                        .background(color = backgroundColour(currentWeatherState?.weatherDescription))
+                ) {
+                    WeatherTopSection(
+                        currentTemperature = { currentWeatherState?.temperature?.toInt() },
+                        weatherCondition = { currentWeatherState?.weatherDescription },
+                        weatherIcon = weatherImage,
+                        city = { currentWeatherState?.city }
+                    )
+                    WeatherMiddleSection(
+                        minTemperature = { currentWeatherState?.main?.temp_min?.toInt() },
+                        currentTemperature = { currentWeatherState?.main?.temp?.toInt() },
+                        maxTemperature = { currentWeatherState?.main?.temp_max?.toInt() },
+                        condition = { currentWeatherState?.weatherDescription }
+                    )
+                    HorizontalDivider(color = Color.White)
+                    WeatherBottomSection(
+                        dailyWeather = { forecastState ?: emptyList() },
+                        condition = { currentWeatherState?.weatherDescription },
+                    )
+                }
             }
-        } else {
-            Column(
+        }
+    }
+}
+
+
+
+@Composable
+fun SearchBar(
+    query: String,
+    onQueryChange: (String) -> Unit,
+    onSearchAction: () -> Unit
+) {
+    val focusRequester = remember { FocusRequester() }
+    val keyboardController = LocalSoftwareKeyboardController.current
+
+    Box(modifier = Modifier.fillMaxWidth()) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        ) {
+            OutlinedTextField(
+                value = query,
+                onValueChange = onQueryChange,
                 modifier = Modifier
-                    .fillMaxSize()
-                    .padding(innerPadding)
-                    .background(color = backgroundColour(currentWeatherState?.weatherDescription))
-            ) {
-                WeatherTopSection(
-                    currentTemperature = { currentWeatherState?.temperature?.toInt() },
-                    weatherCondition = { currentWeatherState?.weatherDescription },
-                    weatherIcon = weatherImage,
-                    city = { currentWeatherState?.city }
+                    .weight(1f)
+                    .padding(end = 8.dp)
+                    .focusRequester(focusRequester),
+                placeholder = { Text(text = "Search city...") },
+                maxLines = 1,
+                singleLine = true,
+                trailingIcon = {
+                    if (query.isNotEmpty()) {
+                        IconButton(onClick = { onQueryChange("") }) {
+                            Icon(
+                                imageVector = Icons.Default.Close,
+                                contentDescription = "Clear text"
+                            )
+                        }
+                    }
+                },
+                keyboardOptions = KeyboardOptions.Default.copy(
+                    imeAction = ImeAction.Done
+                ),
+                keyboardActions = KeyboardActions(
+                    onDone = {
+                        keyboardController?.hide()
+                        onSearchAction()
+                    }
                 )
-                WeatherMiddleSection(
-                    minTemperature = { currentWeatherState?.main?.temp_min?.toInt() },
-                    currentTemperature = { currentWeatherState?.main?.temp?.toInt() },
-                    maxTemperature = { currentWeatherState?.main?.temp_max?.toInt() },
-                    condition = { currentWeatherState?.weatherDescription }
-                )
-                HorizontalDivider(color = Color.White)
-                WeatherBottomSection(
-                    dailyWeather = { forecastState ?: emptyList() },
-                    condition = { currentWeatherState?.weatherDescription },
-                )
-            }
+            )
         }
     }
 }
@@ -190,6 +307,7 @@ fun WeatherMiddleSection(
     }
 }
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun WeatherBottomSection(
     dailyWeather: () -> List<WeatherForecastUiState>,
@@ -264,6 +382,7 @@ fun WeatherMidPreview(@PreviewParameter(WeatherUIStateProvider::class) uiState: 
     }
 }
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Preview(showBackground = true)
 @Composable
 fun WeatherBottomPreview() {
@@ -295,6 +414,18 @@ fun WeatherBottomPreview() {
                 )
             },
             condition = { "Sunny" },
+        )
+    }
+}
+
+@Composable
+@Preview(showBackground = true)
+fun SearchBarPreview() {
+    WeatherAppTheme {
+        SearchBar(
+            query = "Mumbai",
+            onQueryChange = {},
+            onSearchAction = {}
         )
     }
 }

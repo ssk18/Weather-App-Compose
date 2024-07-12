@@ -1,4 +1,4 @@
-package com.ssk.weatherapp.ui.screens
+package com.ssk.weatherapp.ui.screens.weatherscreen
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import com.ssk.weatherapp.ui.screens.uistates.CurrentWeatherUIState
 

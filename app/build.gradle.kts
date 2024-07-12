@@ -1,6 +1,3 @@
-import java.io.FileInputStream
-import java.util.Properties
-
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.jetbrains.kotlin.android)
@@ -9,6 +6,7 @@ plugins {
     kotlin("plugin.serialization").version("1.9.0")
     kotlin("kapt")
     alias(libs.plugins.hilt)
+    id("com.google.android.libraries.mapsplatform.secrets-gradle-plugin")
 }
 
 android {
@@ -17,17 +15,18 @@ android {
 
     defaultConfig {
         applicationId = "com.ssk.weatherapp"
-        minSdk = 24
+        minSdk = 21
         targetSdk = 34
         versionCode = 1
         versionName = "1.0"
 
-        val apiKeysPropertiesFile = rootProject.file("WeatherApiKey.properties")
-        val apiKeysProperties = Properties()
-        if (apiKeysPropertiesFile.exists()) {
-            apiKeysProperties.load(FileInputStream(apiKeysPropertiesFile))
-            buildConfigField("String", "openWeatherApiKey", "\"${apiKeysProperties["openWeatherApiKey"]}\"")
-        }
+//        val apiKeysPropertiesFile = rootProject.file("api_keys.properties")
+//        val apiKeysProperties = Properties()
+//        if (apiKeysPropertiesFile.exists()) {
+//            apiKeysProperties.load(FileInputStream(apiKeysPropertiesFile))
+//            buildConfigField("String", "openWeatherApiKey", "\"${apiKeysProperties["openWeatherApiKey"]}\"")
+//            buildConfigField("String", "PLACES_API_KEYS", "\"${apiKeysProperties["PLACES_API_KEYS"]}\"")
+//        }
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -108,4 +107,25 @@ dependencies {
     implementation(libs.moshi)
 
     implementation(libs.compose.ui.googlefonts)
+
+    implementation(libs.kotlin.bom)
+    implementation(libs.google.places)
+
+    implementation(libs.accompanist.permissions)
+    implementation(libs.androidx.splash.screen)
+}
+
+secrets {
+    // Optionally specify a different file name containing your secrets.
+    // The plugin defaults to "local.properties"
+    propertiesFileName = "secrets.properties"
+
+    // A properties file containing default secret values. This file can be
+    // checked in version control.
+    defaultPropertiesFileName = "local.defaults.properties"
+
+    // Configure which keys should be ignored by the plugin by providing regular expressions.
+    // "sdk.dir" is ignored by default.
+    ignoreList.add("keyToIgnore") // Ignore the key "keyToIgnore"
+    ignoreList.add("sdk.*")       // Ignore all keys matching the regexp "sdk.*"
 }

@@ -3,6 +3,9 @@ package com.ssk.weatherapp.di
 import android.content.Context
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
+import com.google.android.libraries.places.api.Places
+import com.google.android.libraries.places.api.net.PlacesClient
+import com.ssk.weatherapp.BuildConfig
 import com.ssk.weatherapp.data.remote.WeatherService
 import dagger.Module
 import dagger.Provides
@@ -31,4 +34,13 @@ object LocationModule {
             .addConverterFactory(GsonConverterFactory.create())
             .build()
             .create<WeatherService>()
+
+    @Provides
+    @Singleton
+    fun providePlacesClient(@ApplicationContext context: Context): PlacesClient {
+        if (!Places.isInitialized()) {
+            Places.initializeWithNewPlacesApiEnabled(context, BuildConfig.PLACES_API_KEYS)
+        }
+        return Places.createClient(context)
+    }
 }

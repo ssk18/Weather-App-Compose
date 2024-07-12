@@ -9,4 +9,13 @@
     <string name="location_permission_description">Please allow the app to access your location.</string>
     <string name="location_permission_continue">OK</string>
     <string name="location_permission_not_available">The app needs your permission to access your current location to display the weather for your location.</string>
+
+    <string name="error_api_key" translatable="false">No API key defined in gradle.properties</string>
+    <string name="please_allow_location_permission_to_get_the_weather_updates">Please allow location permission to get the weather updates</string>
+    <string name="request_permission">Request Permission</string>
+    <string name="grant_permission">Allow</string>
+    <string name="cancel">Cancel</string>
+    <string name="ok">OK</string>
+    <string name="location_permissions_are_denied_you_can_enable_them_in_the_app_settings">Location permissions are denied. You can enable them in the app settings.</string>
+    <string name="the_app_needs_location_permissions_to_show_the_weather_information">The app needs location permissions to show the weather information.</string>
 </resources>
